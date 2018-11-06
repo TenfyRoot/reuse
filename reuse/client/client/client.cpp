@@ -32,6 +32,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	WSAData wsaData;
 	WSAStartup(MAKEWORD(1, 1), &wsaData);
 
+	//sock80 = ConnectHost(inet_addr("127.0.0.1"), 80);
+
 	int sockfd = ConnectHost(inet_addr(serveraddr), 9999, true);
 	if (sockfd <= 0) goto end;
 
@@ -63,12 +65,13 @@ end:
 unsigned long __stdcall ThreadAccept(void* param)
 {
 	int socklisten = (int)param;
-	tagSock* stSock = new tagSock();
+	
 	struct sockaddr_in addr;
 	int len = sizeof(struct sockaddr);
 	while(true) {
 		int newsock = accept(socklisten, (struct sockaddr *)&addr, &len);
 		if (newsock > 0) {
+			tagSock* stSock = new tagSock();
 			stSock->sockfrom = newsock;
 			printf("client>>accept %s:%d\r\n", inet_ntoa(addr.sin_addr),ntohs(addr.sin_port));
 			stSock->sockto = ConnectHost(inet_addr("127.0.0.1"), 80);
@@ -77,7 +80,6 @@ unsigned long __stdcall ThreadAccept(void* param)
 		}
 		Sleep(100);
 	}
-	delete stSock;
 	return 0;
 }
 
@@ -86,7 +88,7 @@ unsigned long __stdcall ThreadRecv(void* param)
 {
 	tagSock* stSock = (tagSock*)param;
 	//printf("sock:%d,%d,%d\r\n", stSock->socklisten,stSock->sockto,stSock->sockfrom);
-	char RecvBuf[1024*8] = {0};
+	char RecvBuf[1024*100] = {0};
 	fd_set fdset;
 	int ret, nRecv;
 	clock_t start, finish;
@@ -122,9 +124,10 @@ error:
 	if (ret <= 0 || nRecv <= 0)
 		printf( "[error-%d]", WSAGetLastError() );
 	closesocket(stSock->sockfrom);
-	closesocket(stSock->sockto);
+	//closesocket(stSock->sockto);
 	double duration = (double)(clock() - start) / CLOCKS_PER_SEC;
 	printf( "-->%f seconds\n", duration );
+	delete stSock;
 	return 0;
 }
 
