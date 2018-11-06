@@ -28,7 +28,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	bind(sockfd,(struct sockaddr*)&addr,sizeof(struct sockaddr));
 
-	listen(sockfd,5);
+	listen(sockfd, 1000);
 
 	unsigned long threadId;
 	::CreateThread(0,0,ThreadFunc,0,0,&threadId);
